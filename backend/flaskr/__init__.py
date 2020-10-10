@@ -87,12 +87,14 @@ def create_app(test_config=None):
       previous = request.json["previous_questions"]
       category = request.json["quiz_category"]["id"]
       previoussubquery = db.session.query(Question.id).filter(Question.id.in_((previous))).all()
-      if category == 0:
-          question = db.session.query(Question).filter(~Question.id.in_(previoussubquery)).limit(1).one()
-      else:
-          question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previoussubquery)).limit(1).one()
+      try:
+          if category == 0:
+              question = db.session.query(Question).filter(~Question.id.in_(previoussubquery)).limit(1).one()
+          else:
+              question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previoussubquery)).limit(1).one()
+      except Exception as e:
+          return jsonify(noquestion = "no more questions to load")
 
-      previous.append(question.id)
       return jsonify(question = question.format())
 
   @app.errorhandler(400)
