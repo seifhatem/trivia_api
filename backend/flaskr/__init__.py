@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from  sqlalchemy.sql.expression import func, select
 from flask_cors import CORS, cross_origin
 import random
 
@@ -89,9 +90,9 @@ def create_app(test_config=None):
       previoussubquery = db.session.query(Question.id).filter(Question.id.in_((previous))).all()
       try:
           if category == 0:
-              question = db.session.query(Question).filter(~Question.id.in_(previoussubquery)).limit(1).one()
+              question = db.session.query(Question).filter(~Question.id.in_(previoussubquery)).order_by(func.random()).limit(1).one()
           else:
-              question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previoussubquery)).limit(1).one()
+              question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previoussubquery)).order_by(func.random()).limit(1).one()
       except Exception as e:
           return jsonify(noquestion = "no more questions to load")
 
