@@ -73,13 +73,13 @@ def create_app(test_config=None):
   def questions_search():
       query = request.json["searchTerm"]
       questions = Question.query.filter(Question.question.ilike(f'%{query}%')).all()
-      totalCount = Question.query.filter(Question.question.ilike(f'%{query}%')).count()
+      totalCount = len(questions)
       return jsonify(total_questions=totalCount,questions=[z.format() for z in questions])
 
   @app.route('/api/categories/<categoryid>/questions')
   def questionsForCategory(categoryid):
      questions = db.session.query(Question).filter_by(category=categoryid)
-     totalCount = db.session.query(Question).filter_by(category=categoryid).count()
+     totalCount = len(questions)
      return jsonify(current_category=categoryid,total_questions=totalCount,questions=[z.format() for z in questions])
 
 
@@ -87,12 +87,12 @@ def create_app(test_config=None):
   def runquiz():
       previous = request.json["previous_questions"]
       category = request.json["quiz_category"]["id"]
-      previoussubquery = db.session.query(Question.id).filter(Question.id.in_((previous))).all()
+      previous_subquery = db.session.query(Question.id).filter(Question.id.in_((previous))).all()
       try:
           if category == 0:
-              question = db.session.query(Question).filter(~Question.id.in_(previoussubquery)).order_by(func.random()).limit(1).one()
+              question = db.session.query(Question).filter(~Question.id.in_(previous_subquery)).order_by(func.random()).limit(1).one()
           else:
-              question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previoussubquery)).order_by(func.random()).limit(1).one()
+              question = db.session.query(Question).filter_by(category=category).filter(~Question.id.in_(previous_subquery)).order_by(func.random()).limit(1).one()
       except Exception as e:
           return jsonify(noquestion = "no more questions to load")
 
